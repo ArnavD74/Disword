@@ -1,47 +1,25 @@
 {
-  "name": "tangerine",
+  "name": "wordbot",
   "version": "1.0.0",
-  "description": "a multipurpose utility discord bot",
+  "description": "",
   "main": "bot.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tangerine-public/tangerine"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArnavD74/Wordbot.git"
+  },
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ArnavD74/Wordbot/issues"
+  },
+  "homepage": "https://github.com/ArnavD74/Wordbot#readme",
   "dependencies": {
-    "apexlegendsjs": "^1.2.1",
-    "ascii-art-font": "^1.0.2",
-    "chance": "^1.1.4",
-    "csgo-stats": "0.0.26",
-    "csgostatsnode": "^1.1.1",
-    "dblapi.js": "^2.4.0",
-    "discord.js": "^11.5.1",
-    "dog-facts": "^1.0.3",
-    "dogeify-js": "^1.2.0",
-    "dotenv": "^8.2.0",
-    "figlet": "^1.3.0",
-    "fs": "0.0.1-security",
-    "gdprofiles": "^1.0.2-rc.2",
-    "hypixel-api": "^1.2.0",
-    "hypixeljs": "^1.4.0",
-    "mojangjs": "^2.0.3",
-    "moment-timezone": "^0.5.28",
-    "ms": "^2.1.2",
-    "node-emoji-clock": "^0.1.0",
-    "node-fetch": "^2.6.0",
-    "panda-facts": "^1.0.3",
-    "r6api.js": "^1.3.0",
-    "random-text-meme": "^1.1.9",
-    "random-word-by-length": "^0.1.0",
-    "request": "^2.88.2",
-    "steamapi": "^2.0.7",
-    "turl": "^1.1.2",
-    "uwufy": "^1.0.3",
-    "wikipics-api": "^1.0.2"
+    "check-if-word": "^1.2.1",
+    "discord.js": "^13.6.0",
+    "make-words": "^0.2.8",
+    "yawg": "^1.2.3"
   }
 }
