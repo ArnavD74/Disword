@@ -33,10 +33,8 @@ client.on("messageCreate", async message => {
     m.edit(`Pong! Network Latency: ${m.createdTimestamp - message.createdTimestamp}ms. API Latency: ${Math.round(client.ping)}ms`);
   }
   //////////////////////////////////////////////////////
-  if (command === "word") {
-
+  if (command === "start") {
     var finalword = "";
-
     try {
       finalWord = yawg({
         minWords: 1,
@@ -53,51 +51,63 @@ client.on("messageCreate", async message => {
       message.reply("An error occured.");
     }
 
-    finalArr = finalWord.split("");
-
     message.reply("Please enter a 5-letter word, e.g. hello");
+
+    finalArr = finalWord.split("");
+    var attempt = "";
+    var wordResponse = "";
+    var turns = 1;
 
     const filter = m => m.author.id === message.author.id;
     const collector = message.channel.createMessageCollector({
       filter,
-      time: 5000
+      time: 120000
     });
 
-    var try1 = "";
-    var isWord = false;
-    var isFive = false;
+    collector.on('collect', m => {
+      console.log(`captured ${m.content}`);
+      attempt = `${m.content}`;
 
-    while (isFive === false && isWord === false) {
-      
-      collector.on('collect', m => {
-        console.log(`captured ${m.content}`);
-        try1 = m.content;
-        if ((words.check(`{m.content}`))) {
-          isWord = true;
-          console.log("Is english.");
-        } else {
-          message.reply("That is not an English word!")
-          console.log("Is not English.");
+      if ((words.check(attempt)))
+        console.log("Is english.");
+      else
+        message.reply("That is not an English word!")
+      if (attempt.length === 5)
+        console.log("Is five letters.");
+      else
+        message.reply("Please make sure your word is 5 letters!");
+        
+      if (words.check(attempt) && attempt.length === 5) {
+        if (attempt == finalWord)
+          return message.reply(`You win!!!`);
+        if (turns === 7)
+          message.reply(`You are out of turns! The word was: ${finalword}`)
+        turns++;
+        wordResponse = "";
+        for (var i = 0; i < 5; i++) {
+          if (finalWord.charAt(i) === attempt.charAt(i)) {
+            wordResponse += (`\nLetter ${i+1} is correct! `)
+          } else if (finalWord.includes(attempt.charAt(i))) {
+            wordResponse += (`\nLetter ${i+1} is almost correct! `)
+          }
         }
-        if (m.content.length == 5) {
-          console.log("Is five letters.");
-          isFive = true;
-        } else {
-          message.reply("Please make sure your word is 5 letters!");
-          console.log("Is not five letters.");
-        }
-      });
-
-    }
-
-    var try1arr = try1.split("");
-    for (var i = 0; i < 5; i++) {
-      if (finalArr[i] === try1arr[i]) {
-        message.reply(`Letter ${i+1} is correct!`)
-      } else if (finalWord.includes(try1arr[i])) {
-        message.reply(`Position ${i+1} is almost correct!`)
+        message.reply(`Turn: ${turns}\n${wordResponse}`);
       }
-    }
+    });
+
+    collector.on('end', collected => {
+      console.log(`Collected ${collected.size} items`);
+      message.reply(`Time's Up! The word was: ${finalword}`);
+    });
+
+
+
+
+
+
+
+
+
 
 
 
