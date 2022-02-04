@@ -57,6 +57,7 @@ client.on("messageCreate", async message => {
     var attempt = "";
     var wordResponse = "";
     var turns = 1;
+    var finishedGame = false;
 
     const filter = m => m.author.id === message.author.id;
     const collector = message.channel.createMessageCollector({
@@ -76,10 +77,12 @@ client.on("messageCreate", async message => {
         console.log("Is five letters.");
       else
         message.reply("Please make sure your word is 5 letters!");
-        
+
       if (words.check(attempt) && attempt.length === 5) {
-        if (attempt == finalWord)
+        if (attempt == finalWord) {
           return message.reply(`You win!!!`);
+          finishedGame = true;
+        }
         if (turns === 7)
           message.reply(`You are out of turns! The word was: ${finalword}`)
         turns++;
@@ -97,7 +100,9 @@ client.on("messageCreate", async message => {
 
     collector.on('end', collected => {
       console.log(`Collected ${collected.size} items`);
-      message.reply(`Time's Up! The word was: ${finalword}`);
+      if(finishedGame == false) {
+      message.reply(`Time's Up! The word was: ${finalWord}`);
+      }
     });
 
 
