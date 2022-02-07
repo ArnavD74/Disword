@@ -145,15 +145,15 @@ client.on("messageCreate", async message => {
         for (var i = 0; i < 5; i++) {
           dimensions[i] = sizeOf(`cache/${imgcache+i}.png`)
           imgY = dimensions[i].height;
-          imgX += dimensions[i].width;
+          imgX = dimensions[i].width;
         }
 
         images(300, 60)
           .draw(images(`cache/${imgcache}.png`), dimensions[0].width, dimensions[0].height)
-          .draw(images(`cache/${imgcache+1}.png`), dimensions[1].width + 30, dimensions[1].height)
-          .draw(images(`cache/${imgcache+2}.png`), dimensions[2].width + 60, dimensions[2].height)
-          .draw(images(`cache/${imgcache+3}.png`), dimensions[3].width + 90, dimensions[3].height)
-          .draw(images(`cache/${imgcache+4}.png`), dimensions[4].width + 120, dimensions[4].height)
+          .draw(images(`cache/${imgcache+1}.png`), dimensions[1].width + dimensions[0].width, dimensions[1].height)
+          .draw(images(`cache/${imgcache+2}.png`), dimensions[2].width + dimensions[0].width + dimensions[1].width, dimensions[2].height)
+          .draw(images(`cache/${imgcache+3}.png`), dimensions[3].width + dimensions[0].width + dimensions[1].width + dimensions[2].width, dimensions[3].height)
+          .draw(images(`cache/${imgcache+4}.png`), dimensions[4].width + dimensions[0].width + dimensions[1].width + dimensions[2].width + dimensions[3].width, dimensions[4].height)
           .save(`cache/${imgcache+5}.png`, {
             quality: 50
           });
