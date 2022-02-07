@@ -19,7 +19,11 @@
   "dependencies": {
     "check-if-word": "^1.2.1",
     "discord.js": "^13.6.0",
+    "fs": "0.0.1-security",
+    "image-size": "^1.0.1",
+    "images": "^3.2.3",
     "make-words": "^0.2.8",
+    "text2png": "^2.3.0",
     "yawg": "^1.2.3"
   }
 }
