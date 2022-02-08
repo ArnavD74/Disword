@@ -40,7 +40,8 @@ client.on("messageCreate", async message => {
   if (command === "start") {
 
     var user = message.author.id;
-    var finalword = "";
+    var finalWord = "";
+    var blacklist = ["syria", "julia", "porno"];
 
     try {
       finalWord = yawg({
@@ -58,25 +59,18 @@ client.on("messageCreate", async message => {
       message.reply("An error occured.");
     }
 
-    var dict = []
+    // var dict = []
 
-    dict.push({
-      id: message.author.id,
-      word: finalWord
-    });
-
-
+    // dict.push({
+    //   id: message.author.id,
+    //   word: finalWord
+    // });
 
     message.reply("Please enter a 5-letter word, e.g. hello");
-
-    finalArr = finalWordUser[1].split("");
+    var letters = ["gray", "gray", "gray", "gray", "gray"];
     var attempt = "";
-    var wordResponse = "";
     var turns = 1;
     var finishedGame = false;
-    var currentWord = "";
-
-    var letters = ["gray", "gray", "gray", "gray", "gray"];
 
     const filter = m => m.author.id === message.author.id;
     const collector = message.channel.createMessageCollector({
@@ -85,32 +79,18 @@ client.on("messageCreate", async message => {
     });
 
     collector.on('collect', m => {
+      message.channel.send('thinking');
       console.log(`captured ${m.content}`);
       attempt = `${m.content}`;
-      if (!(words.check(attempt)))
-        message.reply("That is not an English word!")
-
-      if (!(attempt.length === 5))
-        message.reply("Please make sure your word is 5 letters!");
 
       if (words.check(attempt) && attempt.length === 5) {
+
         letters = ["gray", "gray", "gray", "gray", "gray"];
         imgcache++;
-        if (attempt == finalWord) {
-          message.reply(`You win! The word was: ${finalWord}`);
-          finishedGame = true;
-          m.time = 120000;
-          return;
-        }
 
         if (turns === 7)
           message.reply(`You are out of turns! The word was: ${finalWord}`)
         turns++;
-        wordResponse = "";
-
-        for (var i = 0; i < 5; i++) {
-          currentWord[i] = attempt.charAt(i);
-        }
 
         for (var i = 0; i < 5; i++) {
           if (finalWord.charAt(i) === attempt.charAt(i))
@@ -119,50 +99,51 @@ client.on("messageCreate", async message => {
             letters[i] = "yellow";
         }
 
-        var attemptUpper = attempt.toUpperCase();
+        for (var i = 0; i < 5; i++) {
+          fs.writeFileSync(`cache/${imgcache+i}.png`, text2png(`${attempt.toUpperCase().charAt(i)}`, {
+            color: `${letters[i]}`
+          }));
+        }
 
-        fs.writeFileSync(`cache/${imgcache}.png`, text2png(`${attemptUpper.charAt(0)}`, {
-          color: `${letters[0]}`
-        }));
-        fs.writeFileSync(`cache/${imgcache+1}.png`, text2png(`${attemptUpper.charAt(1)}`, {
-          color: `${letters[1]}`
-        }));
-        fs.writeFileSync(`cache/${imgcache+2}.png`, text2png(`${attemptUpper.charAt(2)}`, {
-          color: `${letters[2]}`
-        }));
-        fs.writeFileSync(`cache/${imgcache+3}.png`, text2png(`${attemptUpper.charAt(3)}`, {
-          color: `${letters[3]}`
-        }));
-        fs.writeFileSync(`cache/${imgcache+4}.png`, text2png(`${attemptUpper.charAt(4)}`, {
-          color: `${letters[4]}`
+        fs.writeFileSync(`cache/${imgcache+5}.png`, text2png(`Turn ${turns-1}`, {
+          color: 'white',
+          font: '12px Sans'
+
         }));
 
         var dimensions = [0, 0, 0, 0, 0];
-
         var imgX = 0;
-        var imgY = 0;
 
         for (var i = 0; i < 5; i++) {
           dimensions[i] = sizeOf(`cache/${imgcache+i}.png`)
-          imgY = dimensions[i].height;
-          imgX = dimensions[i].width;
+          imgX += dimensions[i].width;
         }
 
-        images(300, 60)
+        images(300, 65)
           .draw(images(`cache/${imgcache}.png`), dimensions[0].width, dimensions[0].height)
-          .draw(images(`cache/${imgcache+1}.png`), dimensions[1].width + dimensions[0].width, dimensions[1].height)
-          .draw(images(`cache/${imgcache+2}.png`), dimensions[2].width + dimensions[0].width + dimensions[1].width, dimensions[2].height)
-          .draw(images(`cache/${imgcache+3}.png`), dimensions[3].width + dimensions[0].width + dimensions[1].width + dimensions[2].width, dimensions[3].height)
-          .draw(images(`cache/${imgcache+4}.png`), dimensions[4].width + dimensions[0].width + dimensions[1].width + dimensions[2].width + dimensions[3].width, dimensions[4].height)
-          .save(`cache/${imgcache+5}.png`, {
+          .draw(images(`cache/${imgcache+1}.png`), 10 + dimensions[0].width + dimensions[1].width, dimensions[1].height)
+          .draw(images(`cache/${imgcache+2}.png`), 10 + dimensions[0].width + dimensions[1].width + dimensions[2].width, dimensions[2].height)
+          .draw(images(`cache/${imgcache+3}.png`), 10 + dimensions[0].width + dimensions[1].width + dimensions[2].width + dimensions[3].width, dimensions[3].height)
+          .draw(images(`cache/${imgcache+4}.png`), 10 + dimensions[0].width + dimensions[1].width + dimensions[2].width + dimensions[3].width + dimensions[4].width, dimensions[4].height)
+          .draw(images(`cache/${imgcache+5}.png`), imgX / 2, 50)
+          .save(`cache/${imgcache+6}.png`, {
             quality: 50
           });
 
         message.reply({
-          files: [`cache/${imgcache+5}.png`]
+          files: [`cache/${imgcache+6}.png`]
         });
-        //message.reply(`Turn: ${turns}\n${wordResponse}`);
+
+        if (attempt == finalWord) {
+          message.reply(`You win!`);
+          finishedGame = true;
+          collector.stop();
+        }
+
+      } else {
+        message.reply("That word is not 5 letters or is not in English.")
       }
+
     });
     collector.on('end', collected => {
       console.log(`Collected ${collected.size} items`);
