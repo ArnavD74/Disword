@@ -13,8 +13,8 @@ const sizeOf = require('image-size')
 var imgcache = 0;
 
 client.on("ready", () => {
-  console.log(`Wordbot is online`);
-  client.user.setActivity(`Wordle`, {
+  console.log(`Disword is online`);
+  client.user.setActivity(`Wordle Games`, {
     type: 'WATCHING'
   });
   client.user.setStatus('online');
@@ -24,7 +24,7 @@ client.on("messageCreate", async message => {
   const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
   if (message.channel.type === "dm") {
-    return message.reply("Sorry, Tangerine does not work in DMs.");
+    return message.reply("Sorry, Disword does not work in DMs.");
   }
   //////////////////////////////////////////////////////
   if (command === "ping") {
@@ -34,12 +34,15 @@ client.on("messageCreate", async message => {
       );
     }
     const m = await message.channel.send("Ping?");
-    m.edit(`Pong! Network Latency: ${m.createdTimestamp - message.createdTimestamp}ms. API Latency: ${Math.round(client.ping)}ms`);
+    m.edit(`Pong! Network Latency: ${m.createdTimestamp - message.createdTimestamp}ms.`);
   }
   //////////////////////////////////////////////////////
   if (command === "start") {
 
+    var gameTime = 600000;
     var finalWord = "";
+    if (args[0] === "quick")
+      gameTime = 120000;
 
     try {
       finalWord = yawg({
@@ -57,14 +60,11 @@ client.on("messageCreate", async message => {
       message.reply("An error occured.");
     }
 
-    if (!words.check(finalWord)) {
+    if (!words.check(finalWord))
       return message.reply("An error occured. Please run the command again");
-    }
-
     const idWords = new Map();
     idWords.set(`${message.author.id}`, `${finalWord}`);
-
-    message.reply("Please enter a 5-letter word, e.g. hello");
+    message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
     var letters = ["gray", "gray", "gray", "gray", "gray"];
     var attempt = "";
     var turns = 1;
@@ -73,74 +73,104 @@ client.on("messageCreate", async message => {
     const filter = m => m.author.id === message.author.id;
     const collector = message.channel.createMessageCollector({
       filter,
-      time: 120000
+      time: `${gameTime}`
     });
 
     collector.on('collect', m => {
       console.log(`captured ${m.content}`);
       attempt = `${m.content}`;
+      attempt = attempt.toLowerCase();
 
-      if (words.check(attempt) && attempt.length === 5) {
+      if (attempt === "end") {
+        message.reply(`You ended the game.`);
+        finishedGame = true;
+        collector.stop();
+      }
+
+      if (words.check(attempt) && attempt.length === 5 && !finishedGame) {
 
         letters = ["gray", "gray", "gray", "gray", "gray"];
         imgcache++;
 
-        if (turns === 7)
+        if (turns === 7 && attempt != idWords.get(`${message.author.id}`))
           message.reply(`You are out of turns! The word was: ${idWords.get(`${message.author.id}`)}`)
         turns++;
 
         for (var i = 0; i < 5; i++) {
           if (idWords.get(`${message.author.id}`).charAt(i) === attempt.charAt(i))
-            letters[i] = "green";
+            letters[i] = "#57ac78";
           else if (idWords.get(`${message.author.id}`).includes(attempt.charAt(i)))
-            letters[i] = "yellow";
+            letters[i] = "#dfc861";
         }
 
         for (var i = 0; i < 5; i++) {
           fs.writeFileSync(`cache/${imgcache+i}.png`, text2png(`${attempt.toUpperCase().charAt(i)}`, {
-            color: `${letters[i]}`
+            color: `${letters[i]}`,
+            font: '30px IBM_mono',
+            localFontPath: 'fonts/IBMPlexMono-Regular.ttf',
+            localFontName: 'IBM_mono'
           }));
         }
 
         fs.writeFileSync(`cache/${imgcache+5}.png`, text2png(`Turn ${turns-1}`, {
           color: 'white',
-          font: '12px Sans'
-
+          font: '14px IBM',
+          localFontPath: 'fonts/IBMPlexSans-Bold.ttf',
+          localFontName: 'IBM'
         }));
 
         var dimensions = [0, 0, 0, 0, 0];
         var imgX = 0;
-
         for (var i = 0; i < 5; i++) {
           dimensions[i] = sizeOf(`cache/${imgcache+i}.png`)
           imgX += dimensions[i].width;
         }
 
-        images(300, 65)
-          .draw(images(`cache/${imgcache}.png`), dimensions[0].width, dimensions[0].height)
-          .draw(images(`cache/${imgcache+1}.png`), 10 + dimensions[0].width + dimensions[1].width, dimensions[1].height)
-          .draw(images(`cache/${imgcache+2}.png`), 10 + dimensions[0].width + dimensions[1].width + dimensions[2].width, dimensions[2].height)
-          .draw(images(`cache/${imgcache+3}.png`), 10 + dimensions[0].width + dimensions[1].width + dimensions[2].width + dimensions[3].width, dimensions[3].height)
-          .draw(images(`cache/${imgcache+4}.png`), 10 + dimensions[0].width + dimensions[1].width + dimensions[2].width + dimensions[3].width + dimensions[4].width, dimensions[4].height)
-          .draw(images(`cache/${imgcache+5}.png`), imgX / 2, 50)
-          .save(`cache/${imgcache+6}.png`, {
-            quality: 50
-          });
-
-        message.reply({
-          files: [`cache/${imgcache+6}.png`]
-        });
-
         if (attempt == idWords.get(`${message.author.id}`)) {
-          message.reply(`You win!`);
+          // fs.writeFileSync(`GG.png`, text2png(`GG!`, {
+          //   color: `#53f7fc`,
+          //   font: '18px IBM',
+          //   localFontPath: 'fonts/IBMPlexSans-Bold.ttf',
+          //   localFontName: 'IBM'
+          // }));
+          images(300, 100)
+            .draw(images(`cache/${imgcache}.png`), dimensions[0].width, dimensions[0].height)
+            .draw(images(`cache/${imgcache+1}.png`), dimensions[0].width + dimensions[1].width, dimensions[1].height)
+            .draw(images(`cache/${imgcache+2}.png`), dimensions[0].width + dimensions[1].width + dimensions[2].width, dimensions[2].height)
+            .draw(images(`cache/${imgcache+3}.png`), dimensions[0].width + dimensions[1].width + dimensions[2].width + dimensions[3].width, dimensions[3].height)
+            .draw(images(`cache/${imgcache+4}.png`), dimensions[0].width + dimensions[1].width + dimensions[2].width + dimensions[3].width + dimensions[4].width, dimensions[4].height)
+            .draw(images(`cache/${imgcache+5}.png`), imgX / 2, 60)
+            .draw(images(`GG.png`), (imgX / 2) + 4, 74)
+            .save(`cache/${imgcache+7}.png`, {
+              quality: 50
+            });
+          message.reply({
+            files: [`cache/${imgcache+7}.png`]
+          });
           finishedGame = true;
           collector.stop();
+        } else {
+          images(300, 80)
+            .draw(images(`cache/${imgcache}.png`), dimensions[0].width, dimensions[0].height)
+            .draw(images(`cache/${imgcache+1}.png`), dimensions[0].width + dimensions[1].width, dimensions[1].height)
+            .draw(images(`cache/${imgcache+2}.png`), dimensions[0].width + dimensions[1].width + dimensions[2].width, dimensions[2].height)
+            .draw(images(`cache/${imgcache+3}.png`), dimensions[0].width + dimensions[1].width + dimensions[2].width + dimensions[3].width, dimensions[3].height)
+            .draw(images(`cache/${imgcache+4}.png`), dimensions[0].width + dimensions[1].width + dimensions[2].width + dimensions[3].width + dimensions[4].width, dimensions[4].height)
+            .draw(images(`cache/${imgcache+5}.png`), imgX / 2, 60)
+            .save(`cache/${imgcache+6}.png`, {
+              quality: 50
+            });
+          message.reply({
+            files: [`cache/${imgcache+6}.png`]
+          });
         }
-
       } else {
-        message.reply("That word is not 5 letters or is not in English.")
+        if (!finishedGame) {
+          if (attempt.length === 5) {
+            message.reply("That word is not 5 letters or is not in English.")
+          }
+        }
       }
-
     });
     collector.on('end', collected => {
       console.log(`Collected ${collected.size} items`);
