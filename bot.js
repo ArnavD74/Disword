@@ -10,6 +10,23 @@ const fs = require('fs');
 const text2png = require('text2png');
 const images = require("images");
 const sizeOf = require('image-size')
+const csvWriter = require('csv-write-stream')
+const fastcsv = require('fast-csv');
+const stream = fs.createReadStream("stats.csv");
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+
+
+async function fileLineCount({
+  fileLocation
+}) {
+  const {
+    stdout
+  } = await exec(`cat ${fileLocation} | wc -l`);
+  return parseInt(stdout);
+};
+
+
 var imgcache = 0;
 
 client.on("ready", () => {
@@ -44,6 +61,61 @@ client.on("messageCreate", async message => {
     if (args[0] === "quick")
       gameTime = 120000;
 
+    // var idMatch = false;
+    // var csvSize = 0;
+
+    // var data = fs.readFileSync('stats.csv')
+    //   .toString()
+    //   .split('\n')
+    //   .map(e => e.trim())
+    //   .map(e => e.split(',').map(e => e.trim()));
+    // csvSize = (Object.values(data).length);
+
+    // console.log("Size: " + csvSize);
+
+    // fastcsv
+    //   .parseStream(stream, {
+    //     headers: true
+    //   })
+    //   .on("data", function (data) {
+
+    //     for (var i = 0; i < csvSize; i++) {
+    //       if (`${message.author.id}` === Object.values(data)[i]) {
+    //         console.log("ID MATCH");
+    //         idMatch = true;
+    //       }
+    //       if (!idMatch) {
+    //         console.log("NO ID MATCH");
+    //         var gamesPlayed = 5;
+    //         var turnsPlayed = 10;
+    //         var gamesWon = 15;
+    //         var percentGray = 0;
+    //         var percentYellow = 0;
+    //         var percentGreen = 0;
+
+    //         writer = csvWriter({
+    //           sendHeaders: false
+    //         });
+    //         writer.pipe(fs.createWriteStream("stats.csv", {
+    //           flags: 'a'
+    //         }));
+    //         writer.write({
+    //           discordID: `${message.author.id}`,
+    //           gamesPlayed: 5,
+    //           turnsPlayed: 10,
+    //           gamesWon: 15,
+    //           percentGray: 0,
+    //           percentYellow: 0,
+    //           percentGreen: 0
+    //         });
+    //         writer.end();
+    //       }
+    //     }
+    //   })
+    // // .on("end", function () {
+    // //   console.log("done");
+    // // });
+
     try {
       finalWord = yawg({
         minWords: 1,
@@ -69,6 +141,7 @@ client.on("messageCreate", async message => {
     var attempt = "";
     var turns = 1;
     var finishedGame = false;
+
 
     const filter = m => m.author.id === message.author.id;
     const collector = message.channel.createMessageCollector({
