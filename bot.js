@@ -39,9 +39,7 @@ client.on("messageCreate", async message => {
   //////////////////////////////////////////////////////
   if (command === "start") {
 
-    var user = message.author.id;
     var finalWord = "";
-    var blacklist = ["syria", "julia", "porno"];
 
     try {
       finalWord = yawg({
@@ -53,18 +51,18 @@ client.on("messageCreate", async message => {
         maxLength: 5,
         count: 1
       });
-      console.log(`Final word for ${user}: ${finalWord}`);
+      console.log(`Final word for ${message.author.id}: ${finalWord}`);
     } catch (err) {
       console.log(err);
       message.reply("An error occured.");
     }
 
-    // var dict = []
+    if (!words.check(finalWord)) {
+      return message.reply("An error occured. Please run the command again");
+    }
 
-    // dict.push({
-    //   id: message.author.id,
-    //   word: finalWord
-    // });
+    const idWords = new Map();
+    idWords.set(`${message.author.id}`, `${finalWord}`);
 
     message.reply("Please enter a 5-letter word, e.g. hello");
     var letters = ["gray", "gray", "gray", "gray", "gray"];
@@ -79,7 +77,6 @@ client.on("messageCreate", async message => {
     });
 
     collector.on('collect', m => {
-      message.channel.send('thinking');
       console.log(`captured ${m.content}`);
       attempt = `${m.content}`;
 
@@ -89,13 +86,13 @@ client.on("messageCreate", async message => {
         imgcache++;
 
         if (turns === 7)
-          message.reply(`You are out of turns! The word was: ${finalWord}`)
+          message.reply(`You are out of turns! The word was: ${idWords.get(`${message.author.id}`)}`)
         turns++;
 
         for (var i = 0; i < 5; i++) {
-          if (finalWord.charAt(i) === attempt.charAt(i))
+          if (idWords.get(`${message.author.id}`).charAt(i) === attempt.charAt(i))
             letters[i] = "green";
-          else if (finalWord.includes(attempt.charAt(i)))
+          else if (idWords.get(`${message.author.id}`).includes(attempt.charAt(i)))
             letters[i] = "yellow";
         }
 
@@ -134,7 +131,7 @@ client.on("messageCreate", async message => {
           files: [`cache/${imgcache+6}.png`]
         });
 
-        if (attempt == finalWord) {
+        if (attempt == idWords.get(`${message.author.id}`)) {
           message.reply(`You win!`);
           finishedGame = true;
           collector.stop();
@@ -148,7 +145,7 @@ client.on("messageCreate", async message => {
     collector.on('end', collected => {
       console.log(`Collected ${collected.size} items`);
       if (finishedGame == false) {
-        message.reply(`Time's Up! The word was: ${finalWord}`);
+        message.reply(`Time's Up! The word was: ${idWords.get(`${message.author.id}`)}`);
       }
     });
   }
