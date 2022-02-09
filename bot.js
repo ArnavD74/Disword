@@ -141,6 +141,26 @@ client.on("messageCreate", async message => {
       return message.reply("An error occured. Please run the command again");
     const idWords = new Map();
     idWords.set(`${message.author.id}`, `${finalWord}`);
+
+    message.reply(`Welcome back to Disword! Choose your game mode: \`classic\`  \`zen\`  \`crunch\`. Alternatively, try \`$help\`.`);
+
+    const filter = i => i.user.id === `${message.author.id}`;
+
+    const button = interaction.channel.createMessageComponentCollector({
+      filter,
+      time: 30000
+    });
+
+    button.on('collect', async i => {
+      if (i.customId === 'primary') {
+        await i.update({
+          content: 'A button was clicked!',
+          components: []
+        });
+      }
+    });
+
+
     message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
     var letters = ["gray", "gray", "gray", "gray", "gray"];
     var attempt = "";
