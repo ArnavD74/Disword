@@ -20,6 +20,7 @@
     "check-if-word": "^1.2.1",
     "child_process": "^1.0.2",
     "csv-write-stream": "^2.0.0",
+    "csv-writer": "^1.6.0",
     "discord.js": "^13.6.0",
     "fast-csv": "^4.3.6",
     "fs": "0.0.1-security",

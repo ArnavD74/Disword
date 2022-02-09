@@ -15,19 +15,37 @@ const fastcsv = require('fast-csv');
 const stream = fs.createReadStream("stats.csv");
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
-
-
-async function fileLineCount({
-  fileLocation
-}) {
-  const {
-    stdout
-  } = await exec(`cat ${fileLocation} | wc -l`);
-  return parseInt(stdout);
-};
-
-
 var imgcache = 0;
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+
+const statsCSV = createCsvWriter({
+  path: 'stats.csv',
+  header: [{
+      id: 'discordID',
+      title: 'discordID'
+    },
+    {
+      id: 'gamesPlayed',
+      title: 'gamesPlayed'
+    },
+    {
+      id: 'turnsPlayed',
+      title: 'turnsPlayed'
+    },
+    {
+      id: 'percentGray',
+      title: 'percentGray'
+    },
+    {
+      id: 'percentYellow',
+      title: 'percentYellow'
+    },
+    {
+      id: 'percentGreen',
+      title: 'percentGreen'
+    },
+  ]
+});
 
 client.on("ready", () => {
   console.log(`Disword is online`);
@@ -44,22 +62,14 @@ client.on("messageCreate", async message => {
     return message.reply("Sorry, Disword does not work in DMs.");
   }
   //////////////////////////////////////////////////////
-  if (command === "ping") {
-    if (args.length !== 0) {
-      return message.reply(
-        'You must not provide any arguments.'
-      );
-    }
-    const m = await message.channel.send("Ping?");
-    m.edit(`Pong! Network Latency: ${m.createdTimestamp - message.createdTimestamp}ms.`);
-  }
-  //////////////////////////////////////////////////////
   if (command === "start") {
 
     var gameTime = 600000;
     var finalWord = "";
     if (args[0] === "quick")
       gameTime = 120000;
+
+    // var userID = 0;
 
     // var idMatch = false;
     // var csvSize = 0;
@@ -69,52 +79,47 @@ client.on("messageCreate", async message => {
     //   .split('\n')
     //   .map(e => e.trim())
     //   .map(e => e.split(',').map(e => e.trim()));
-    // csvSize = (Object.values(data).length);
-
-    // console.log("Size: " + csvSize);
+    // csvSize = (Object.values(data).length - 2);
+    // //console.log("Size: " + csvSize);
 
     // fastcsv
     //   .parseStream(stream, {
     //     headers: true
     //   })
     //   .on("data", function (data) {
+    //     console.log(Object.values(data));
+    //     console.log(Object.values(data)[0]);
+    //     // console.log(Object.values(data)[1]);
+    //     // console.log(Object.values(data)[2]);
+    //     // console.log(Object.values(data)[3]);
+    //     // console.log(Object.values(data)[4]);
+    //     // console.log(Object.values(data)[5]);
 
     //     for (var i = 0; i < csvSize; i++) {
-    //       if (`${message.author.id}` === Object.values(data)[i]) {
-    //         console.log("ID MATCH");
+    //       if (Object.values(data)[i].substring(1, Object.values(data)[i].length) == (`${message.author.id}`)) {
+    //         //console.log("ID MATCH");
     //         idMatch = true;
-    //       }
-    //       if (!idMatch) {
-    //         console.log("NO ID MATCH");
-    //         var gamesPlayed = 5;
-    //         var turnsPlayed = 10;
-    //         var gamesWon = 15;
-    //         var percentGray = 0;
-    //         var percentYellow = 0;
-    //         var percentGreen = 0;
-
-    //         writer = csvWriter({
-    //           sendHeaders: false
-    //         });
-    //         writer.pipe(fs.createWriteStream("stats.csv", {
-    //           flags: 'a'
-    //         }));
-    //         writer.write({
-    //           discordID: `${message.author.id}`,
-    //           gamesPlayed: 5,
-    //           turnsPlayed: 10,
-    //           gamesWon: 15,
-    //           percentGray: 0,
-    //           percentYellow: 0,
-    //           percentGreen: 0
-    //         });
-    //         writer.end();
     //       }
     //     }
     //   })
-    // // .on("end", function () {
-    // //   console.log("done");
-    // // });
+
+    // if (!idMatch) {
+    //   const newRecord = [{
+    //     discordID: `${message.author.id}`,
+    //     gamesPlayed: 0,
+    //     turnsPlayed: 0,
+    //     percentGray: 0,
+    //     percentYellow: 0,
+    //     percentGreen: 0,
+    //   }];
+    //   //percentGray tracks total gray letters. percentGray / (gamesPlayed * 5)
+
+    //   statsCSV.writeRecords(newRecord) // returns a promise
+    //     .then(() => {
+    //       console.log('Added New User');
+    //     });
+
+    // }
 
     try {
       finalWord = yawg({
@@ -150,9 +155,8 @@ client.on("messageCreate", async message => {
     });
 
     collector.on('collect', m => {
-      console.log(`captured ${m.content}`);
-      attempt = `${m.content}`;
-      attempt = attempt.toLowerCase();
+      //console.log(`captured ${m.content}`);
+      attempt = `${m.content}`.toLowerCase();
 
       if (attempt === "end") {
         message.reply(`You ended the game.`);
@@ -252,6 +256,17 @@ client.on("messageCreate", async message => {
       }
     });
   }
+  //////////////////////////////////////////////////////
+  if (command === "ping") {
+    if (args.length !== 0) {
+      return message.reply(
+        'You must not provide any arguments.'
+      );
+    }
+    const m = await message.channel.send("Ping?");
+    m.edit(`Pong! Network Latency: ${m.createdTimestamp - message.createdTimestamp}ms.`);
+  }
+  //////////////////////////////////////////////////////
 });
 
 client.login(config.token);
