@@ -121,9 +121,41 @@ client.on("messageCreate", async message => {
 
     // }
 
+    const fallback = [
+      "aback",
+      "abase",
+      "abate",
+      "abbey",
+      "abbot",
+      "abhor",
+      "abide",
+      "abled",
+      "abode",
+      "abort",
+      "about",
+      "above",
+      "abuse",
+      "abyss",
+      "acorn",
+      "acrid",
+      "actor",
+      "acute",
+      "adage",
+      "adapt",
+      "adept",
+      "admin",
+      "admit",
+      "adobe",
+      "adopt",
+      "adore",
+      "adorn",
+      "adult",
+      "affix"
+    ]
+
     var finalWord = "";
     var currentChannel = message.channel;
-    var blacklist = ["porno", "xhtml", "htmls", "jenny", "honda"];
+    var blacklist = ["porno", "xhtml", "htmls", "jenny", "honda", "sluts"];
 
     try {
       finalWord = yawg({
@@ -141,8 +173,10 @@ client.on("messageCreate", async message => {
       message.reply("An error occured.");
     }
 
-    if (!words.check(finalWord) || blacklist.includes(finalWord))
-      return message.reply("An error occured. Please run the command again");
+    if (!words.check(finalWord) || blacklist.includes(finalWord)) {
+      finalWord = fallback[Math.floor(Math.random() * items.length)];
+      console.log("Used fallback word:" + finalWord);
+    }
     const idWords = new Map();
     idWords.set(`${message.author.id}`, `${finalWord}`);
 
@@ -256,15 +290,17 @@ client.on("messageCreate", async message => {
         .setCustomId('crunch')
         .setLabel('Crunch')
         .setStyle('SUCCESS'),
-        new MessageButton()
-        .setCustomId('hidden')
-        .setLabel('Hidden')
-        .setStyle('PRIMARY'),
+        // new MessageButton()
+        // .setCustomId('hidden')
+        // .setLabel('Hidden')
+        // .setStyle('PRIMARY'),
         new MessageButton()
         .setCustomId('help')
         .setLabel('Help')
         .setStyle('SECONDARY'),
       );
+
+
 
     message.reply({
       content: 'Welcome back to Disword!',
@@ -387,7 +423,6 @@ client.on("messageCreate", async message => {
       }
     });
     collector.on('end', collected => {
-      console.log(`Collected ${collected.size} items`);
       if (finishedGame == false) {
         message.reply(`Time's Up! The word was: ${idWords.get(`${message.author.id}`)}`);
       }
