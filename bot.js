@@ -17,6 +17,11 @@ const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 var imgcache = 0;
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const {
+  MessageActionRow,
+  MessageButton
+} = require('discord.js');
+const buttonfilter = i => i.user.id === `${message.author.id}`;
 
 const statsCSV = createCsvWriter({
   path: 'stats.csv',
@@ -63,11 +68,6 @@ client.on("messageCreate", async message => {
   }
   //////////////////////////////////////////////////////
   if (command === "start") {
-
-    var gameTime = 600000;
-    var finalWord = "";
-    if (args[0] === "quick")
-      gameTime = 120000;
 
     // var userID = 0;
 
@@ -121,6 +121,10 @@ client.on("messageCreate", async message => {
 
     // }
 
+    var finalWord = "";
+    var currentChannel = message.channel;
+    var blacklist = ["porno", "xhtml", "htmls", "jenny", "honda"];
+
     try {
       finalWord = yawg({
         minWords: 1,
@@ -137,59 +141,163 @@ client.on("messageCreate", async message => {
       message.reply("An error occured.");
     }
 
-    if (!words.check(finalWord))
+    if (!words.check(finalWord) || blacklist.includes(finalWord))
       return message.reply("An error occured. Please run the command again");
     const idWords = new Map();
     idWords.set(`${message.author.id}`, `${finalWord}`);
 
-    message.reply(`Welcome back to Disword! Choose your game mode: \`classic\`  \`zen\`  \`crunch\`. Alternatively, try \`$help\`.`);
-
-    const filter = i => i.user.id === `${message.author.id}`;
-
-    const button = interaction.channel.createMessageComponentCollector({
-      filter,
+    const buttonCollector = message.channel.createMessageComponentCollector({
+      buttonfilter,
       time: 30000
     });
 
-    button.on('collect', async i => {
-      if (i.customId === 'primary') {
+    var hiddenMode = true;
+    var hasInputted = false;
+
+    buttonCollector.on('collect', async i => {
+      if (i.customId === 'classic') {
         await i.update({
-          content: 'A button was clicked!',
+          content: 'Classic Mode Selected.',
           components: []
+        });
+        message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
+        hasInputted = true;
+        buttonCollector.stop();
+      }
+      if (i.customId === 'zen') {
+        await i.update({
+          content: 'Zen Mode Selected.',
+          components: []
+        });
+        maxTries = 100;
+        gameTime = 1200000;
+        message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
+        hasInputted = true;
+        buttonCollector.stop();
+      }
+      if (i.customId === 'crunch') {
+        await i.update({
+          content: 'Crunch Mode Selected.',
+          components: []
+        });
+        gameTime = 30000;
+        message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
+        hasInputted = true;
+        buttonCollector.stop();
+      }
+      if (i.customId === 'hidden') {
+        await i.update({
+          content: 'Hidden Mode Selected.',
+          components: []
+        });
+        hiddenMode = true;
+        message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
+        hasInputted = true;
+        buttonCollector.stop();
+      }
+      if (i.customId === 'help') {
+        await i.update({
+          content: 'Opening Help Menu.',
+          components: []
+        });
+        const help = new MessageEmbed()
+          .setColor('#57ac78')
+          .setTitle('Disword Help')
+          //.setURL('https://discord.js.org/')
+          .setAuthor({
+            name: 'Disword',
+            iconURL: 'https://raw.githubusercontent.com/ArnavD74/Disword/master/images/Logos/icon.png',
+            url: 'https://raw.githubusercontent.com/ArnavD74/Disword/master/images/Logos/icon.png'
+          })
+          .setDescription("\u200B")
+          .setThumbnail('https://raw.githubusercontent.com/ArnavD74/Disword/master/images/Logos/icon.png')
+          .addFields({
+            name: 'Classic',
+            value: 'Five turns. Ten minutes.'
+          }, {
+            name: 'Zen',
+            value: 'A hundred turns. Twenty minutes.'
+          }, {
+            name: 'Crunch',
+            value: 'Five turns. Thirty seconds.'
+          }, {
+            name: '\u200B',
+            value: '\u200B'
+          }, {
+            name: '**How to play**',
+            value: 'You are given six chances to guess a randomly selected five-letter word. A letter that isn\'t in the word in any spot shows up gray. A letter somewhere in the word shows up yellow. And a letter that is in the right spot in the word is green.'
+          })
+          .setImage('https://raw.githubusercontent.com/ArnavD74/Disword/master/images/Logos/miniBanner.png')
+          .setTimestamp()
+          .setFooter({
+            text: 'Created by alt#0001',
+            //iconURL: 'https://raw.githubusercontent.com/ArnavD74/Disword/master/images/Logos/icon.png'
+          });
+        return currentChannel.send({
+          embeds: [help]
         });
       }
     });
+    const {
+      MessageEmbed
+    } = require('discord.js');
 
+    const row = new MessageActionRow()
+      .addComponents(
+        new MessageButton()
+        .setCustomId('classic')
+        .setLabel('Classic')
+        .setStyle('PRIMARY'),
+        new MessageButton()
+        .setCustomId('zen')
+        .setLabel('Zen')
+        .setStyle('DANGER'),
+        new MessageButton()
+        .setCustomId('crunch')
+        .setLabel('Crunch')
+        .setStyle('SUCCESS'),
+        new MessageButton()
+        .setCustomId('hidden')
+        .setLabel('Hidden')
+        .setStyle('PRIMARY'),
+        new MessageButton()
+        .setCustomId('help')
+        .setLabel('Help')
+        .setStyle('SECONDARY'),
+      );
 
-    message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
+    message.reply({
+      content: 'Welcome back to Disword!',
+      components: [row]
+    });
+
     var letters = ["gray", "gray", "gray", "gray", "gray"];
     var attempt = "";
     var turns = 1;
     var finishedGame = false;
+    var gameTime = 600000;
+    var maxTries = 7;
 
-
-    const filter = m => m.author.id === message.author.id;
+    const filter = m => m.author.id === message.author.id && hasInputted == true;
     const collector = message.channel.createMessageCollector({
       filter,
       time: `${gameTime}`
     });
 
     collector.on('collect', m => {
-      //console.log(`captured ${m.content}`);
       attempt = `${m.content}`.toLowerCase();
 
       if (attempt === "end") {
-        message.reply(`You ended the game.`);
+        message.reply(`You ended the game. The word was: ${idWords.get(`${message.author.id}`)}`);
         finishedGame = true;
         collector.stop();
       }
 
       if (words.check(attempt) && attempt.length === 5 && !finishedGame) {
-
         letters = ["gray", "gray", "gray", "gray", "gray"];
         imgcache++;
 
-        if (turns === 7 && attempt != idWords.get(`${message.author.id}`))
+        if (turns === maxTries && attempt != idWords.get(`${message.author.id}`))
           message.reply(`You are out of turns! The word was: ${idWords.get(`${message.author.id}`)}`)
         turns++;
 
@@ -230,6 +338,15 @@ client.on("messageCreate", async message => {
           //   localFontPath: 'fonts/IBMPlexSans-Bold.ttf',
           //   localFontName: 'IBM'
           // }));
+
+          // var image = images(300, 80);
+          // for(var i = 0; i < 6; i++) {
+          //   image.draw(images(`cache/${imgcache+i}.png`), dimensions[0].width, dimensions[0].height)
+          // }
+          // images.save(`cache/${imgcache+7}.png`, {
+          //   quality: 50
+          // });
+
           images(300, 100)
             .draw(images(`cache/${imgcache}.png`), dimensions[0].width, dimensions[0].height)
             .draw(images(`cache/${imgcache+1}.png`), dimensions[0].width + dimensions[1].width, dimensions[1].height)
@@ -261,11 +378,11 @@ client.on("messageCreate", async message => {
             files: [`cache/${imgcache+6}.png`]
           });
         }
+      } else if (words.length != 5 && !finishedGame) {
+        //
       } else {
         if (!finishedGame) {
-          if (attempt.length === 5) {
-            message.reply("That word is not 5 letters or is not in English.")
-          }
+          message.reply("That word is not 5 letters or is not in English.")
         }
       }
     });
