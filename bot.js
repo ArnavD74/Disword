@@ -174,8 +174,8 @@ client.on("messageCreate", async message => {
     }
 
     if (!words.check(finalWord) || blacklist.includes(finalWord)) {
-      finalWord = fallback[Math.floor(Math.random() * items.length)];
-      console.log("Used fallback word:" + finalWord);
+      finalWord = fallback[Math.floor(Math.random() * fallback.length)];
+      console.log("Used fallback word: " + finalWord);
     }
     const idWords = new Map();
     idWords.set(`${message.author.id}`, `${finalWord}`);
@@ -187,6 +187,7 @@ client.on("messageCreate", async message => {
 
     var hiddenMode = true;
     var hasInputted = false;
+    var exiting = false;
 
     buttonCollector.on('collect', async i => {
       if (i.customId === 'classic') {
@@ -227,7 +228,16 @@ client.on("messageCreate", async message => {
         hiddenMode = true;
         message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
         hasInputted = true;
+        exiting = true;
         buttonCollector.stop();
+      }
+      if (i.customId === 'exit') {
+        await i.update({
+          content: 'Exiting',
+          components: []
+        });
+        buttonCollector.stop();
+        //return;
       }
       if (i.customId === 'help') {
         await i.update({
@@ -281,11 +291,11 @@ client.on("messageCreate", async message => {
         new MessageButton()
         .setCustomId('classic')
         .setLabel('Classic')
-        .setStyle('PRIMARY'),
+        .setStyle('SUCCESS'),
         new MessageButton()
         .setCustomId('zen')
         .setLabel('Zen')
-        .setStyle('DANGER'),
+        .setStyle('SUCCESS'),
         new MessageButton()
         .setCustomId('crunch')
         .setLabel('Crunch')
@@ -298,6 +308,10 @@ client.on("messageCreate", async message => {
         .setCustomId('help')
         .setLabel('Help')
         .setStyle('SECONDARY'),
+        new MessageButton()
+        .setCustomId('exit')
+        .setLabel('Exit')
+        .setStyle('DANGER'),
       );
 
 
@@ -313,6 +327,10 @@ client.on("messageCreate", async message => {
     var finishedGame = false;
     var gameTime = 600000;
     var maxTries = 7;
+
+    if(exiting) {
+      return;
+    }
 
     const filter = m => m.author.id === message.author.id && hasInputted == true;
     const collector = message.channel.createMessageCollector({
