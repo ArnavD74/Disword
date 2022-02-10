@@ -13,6 +13,8 @@ const sizeOf = require('image-size')
 const csvWriter = require('csv-write-stream')
 const fastcsv = require('fast-csv');
 const stream = fs.createReadStream("stats.csv");
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 var imgcache = 0;
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const {
@@ -186,140 +188,6 @@ client.on("messageCreate", async message => {
 
     var hiddenMode = true;
     var hasInputted = false;
-    var exiting = false;
-
-    buttonCollector.on('collect', async i => {
-      if (i.customId === 'classic') {
-        await i.update({
-          content: 'Classic Mode Selected.',
-          components: []
-        });
-        message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
-        hasInputted = true;
-        buttonCollector.stop();
-      }
-      if (i.customId === 'zen') {
-        await i.update({
-          content: 'Zen Mode Selected.',
-          components: []
-        });
-        maxTries = 100;
-        gameTime = 1200000;
-        message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
-        hasInputted = true;
-        buttonCollector.stop();
-      }
-      if (i.customId === 'crunch') {
-        await i.update({
-          content: 'Crunch Mode Selected.',
-          components: []
-        });
-        gameTime = 30000;
-        message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
-        hasInputted = true;
-        buttonCollector.stop();
-      }
-      if (i.customId === 'hidden') {
-        await i.update({
-          content: 'Hidden Mode Selected.',
-          components: []
-        });
-        hiddenMode = true;
-        message.reply("Please enter a 5-letter word, e.g. \`crate\`. Type \`end\` to end the game.");
-        hasInputted = true;
-        exiting = true;
-        buttonCollector.stop();
-      }
-      if (i.customId === 'exit') {
-        await i.update({
-          content: 'Exiting',
-          components: []
-        });
-        buttonCollector.stop();
-        //return;
-      }
-      if (i.customId === 'help') {
-        await i.update({
-          content: 'Opening Help Menu.',
-          components: []
-        });
-        const help = new MessageEmbed()
-          .setColor('#57ac78')
-          .setTitle('Disword Help')
-          //.setURL('https://discord.js.org/')
-          .setAuthor({
-            name: 'Disword',
-            iconURL: 'https://raw.githubusercontent.com/ArnavD74/Disword/master/images/Logos/icon.png',
-            url: 'https://raw.githubusercontent.com/ArnavD74/Disword/master/images/Logos/icon.png'
-          })
-          .setDescription("\u200B")
-          .setThumbnail('https://raw.githubusercontent.com/ArnavD74/Disword/master/images/Logos/icon.png')
-          .addFields({
-            name: 'Classic',
-            value: 'Five turns. Ten minutes.'
-          }, {
-            name: 'Zen',
-            value: 'A hundred turns. Twenty minutes.'
-          }, {
-            name: 'Crunch',
-            value: 'Five turns. Thirty seconds.'
-          }, {
-            name: '\u200B',
-            value: '\u200B'
-          }, {
-            name: '**How to play**',
-            value: 'You are given six chances to guess a randomly selected five-letter word. A letter that isn\'t in the word in any spot shows up gray. A letter somewhere in the word shows up yellow. And a letter that is in the right spot in the word is green.'
-          })
-          .setImage('https://raw.githubusercontent.com/ArnavD74/Disword/master/images/Logos/miniBanner.png')
-          .setTimestamp()
-          .setFooter({
-            text: 'Created by alt#0001',
-            //iconURL: 'https://raw.githubusercontent.com/ArnavD74/Disword/master/images/Logos/icon.png'
-          });
-        return currentChannel.send({
-          embeds: [help]
-        });
-      }
-    });
-    const {
-      MessageEmbed
-    } = require('discord.js');
-
-    const row = new MessageActionRow()
-      .addComponents(
-        new MessageButton()
-        .setCustomId('classic')
-        .setLabel('Classic')
-        .setStyle('SUCCESS'),
-        new MessageButton()
-        .setCustomId('zen')
-        .setLabel('Zen')
-        .setStyle('SUCCESS'),
-        new MessageButton()
-        .setCustomId('crunch')
-        .setLabel('Crunch')
-        .setStyle('SUCCESS'),
-        // new MessageButton()
-        // .setCustomId('hidden')
-        // .setLabel('Hidden')
-        // .setStyle('PRIMARY'),
-        new MessageButton()
-        .setCustomId('help')
-        .setLabel('Help')
-        .setStyle('SECONDARY'),
-        new MessageButton()
-        .setCustomId('exit')
-        .setLabel('Exit')
-        .setStyle('DANGER'),
-      );
-
-
-
-    message.reply({
-      content: 'Welcome back to Disword!',
-      components: [row]
-    });
-
     var letters = ["gray", "gray", "gray", "gray", "gray"];
     var attempt = "";
     var turns = 1;
