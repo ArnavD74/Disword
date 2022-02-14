@@ -155,7 +155,7 @@ client.on("messageCreate", async message => {
     var finalWord = "";
     var gameTime = 600000;
     var currentChannel = message.channel;
-    var blacklist = ["porno", "xhtml", "htmls", "jenny", "honda", "sluts", "milfs", "porns", "sexes", "nudes", "dicks", "penis", "cocks", "pussy", "boobs", "dildo", "betty"];
+    var blacklist = ["porno", "xhtml", "htmls", "jenny", "honda", "sluts", "milfs", "porns", "sexes", "nudes", "dicks", "penis", "cocks", "pussy", "boobs", "dildo", "betty", "sanyo", "apnic"];
 
     try {
       finalWord = yawg({
