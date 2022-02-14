@@ -126,7 +126,6 @@ client.on("messageCreate", async message => {
       "abase",
       "abate",
       "abbey",
-      "abbot",
       "abhor",
       "abide",
       "abled",
@@ -156,7 +155,7 @@ client.on("messageCreate", async message => {
     var finalWord = "";
     var gameTime = 600000;
     var currentChannel = message.channel;
-    var blacklist = ["porno", "xhtml", "htmls", "jenny", "honda", "sluts", "milfs", "porns", "sexes", "nudes", "dicks", "penis", "cocks", "pussy", "boobs", "dildo"];
+    var blacklist = ["porno", "xhtml", "htmls", "jenny", "honda", "sluts", "milfs", "porns", "sexes", "nudes", "dicks", "penis", "cocks", "pussy", "boobs", "dildo", "betty"];
 
     try {
       finalWord = yawg({
@@ -178,6 +177,7 @@ client.on("messageCreate", async message => {
       finalWord = fallback[Math.floor(Math.random() * fallback.length)];
       console.log("Used fallback word: " + finalWord);
     }
+    
     const idWords = new Map();
     idWords.set(`${message.author.id}`, `${finalWord}`);
 
